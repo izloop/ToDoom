@@ -1,6 +1,6 @@
 # ToDoom
 
-To Doom is an To Do List which demonstrates fundemental app development skills using UITableViewCells as well as CoreData for the management of Data entered by the user.
+To Doom is an To Do List which demonstrates fundemental app development skills using UITableViewCells as well as CoreData for the storage and management of Data entered by the user.
 
 The App uses iOS development fundamentals: UITableView, CoreData and Alert Actions.
 
