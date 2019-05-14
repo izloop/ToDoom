@@ -8,8 +8,10 @@
 
 import UIKit
 import CoreData
+import SwipeCellKit
 
 @UIApplicationMain
+
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?

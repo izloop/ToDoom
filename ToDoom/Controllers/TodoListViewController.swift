@@ -8,10 +8,14 @@
 
 import UIKit
 import CoreData
+import ChameleonFramework
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
+    
+    @IBOutlet weak var searchBar: UISearchBar!
     
     var itemArray = [Item]()
+    
     
     var selectedCategory : Category? {
         didSet{
@@ -29,6 +33,15 @@ class TodoListViewController: UITableViewController {
                 
         loadItems()
         
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation controller does not exist.")}
+        
+        navBar.tintColor = UIColor.white
+        navBar.barTintColor = FlatPowderBlue()
+        
+        title = selectedCategory!.name
+        
+        searchBar?.barTintColor = FlatPowderBlue()
+                
     }
     
     //MARK: - TableView Datasource Methods
@@ -40,9 +53,19 @@ class TodoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         let item = itemArray[indexPath.row]
+        
+        if let color = FlatPowderBlue().darken(byPercentage:CGFloat(indexPath.row) / CGFloat(itemArray.count)) {
+            cell.backgroundColor = color
+            
+            cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+        }
+        
+//        print("version 1: \(CGFloat(indexPath.row / itemArray.count))")
+//
+//        print("version 2: \(CGFloat(indexPath.row) / CGFloat(itemArray.count))")
         
         cell.textLabel?.text = item.title
         
@@ -54,12 +77,8 @@ class TodoListViewController: UITableViewController {
     //MARK: - TableView Delegate
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //print(itemArray[indexPath.row])
         
-//        context.delete(itemArray[indexPath.row])
-//        itemArray.remove(at: indexPath.row)
-        
-        //itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
         saveItems()
     
@@ -73,7 +92,7 @@ class TodoListViewController: UITableViewController {
         
         var textField = UITextField()
         
-        let alert = UIAlertController(title: "Add new ToDoom Item", message: "", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Add a new To Do Item", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once the user clicks the 'Add Item' button on our UIAlert
@@ -94,6 +113,8 @@ class TodoListViewController: UITableViewController {
             alertTxtField.placeholder = "Create new item"
             textField = alertTxtField
         }
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.cancel, handler: nil))
         
         alert.addAction(action)
         
@@ -132,7 +153,24 @@ class TodoListViewController: UITableViewController {
         }
         
     }
+    
+    //MARK: - Delete data from swipe
+    
+    override func updateModel(at indexPath: IndexPath) {
+        //update the data model
+
+        context.delete(itemArray[indexPath.row])
+        self.itemArray.remove(at: indexPath.row)
+        
+        tableView.deleteRows(at: [indexPath as IndexPath], with: .fade)
+        
+        saveItems()
+        
+        self.tableView.reloadData()
+
+    }
 }
+
 
 //MARK: - Search bar methods
 

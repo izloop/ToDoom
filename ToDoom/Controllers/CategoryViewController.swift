@@ -8,8 +8,9 @@
 
 import UIKit
 import CoreData
+import ChameleonFramework
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
     
     var categoryArray = [Category]()
     
@@ -19,21 +20,25 @@ class CategoryViewController: UITableViewController {
         super.viewDidLoad()
         
         loadCategories()
+        
+        navigationController?.navigationBar.barTintColor = FlatPowderBlue()
+        
     }
     
     //MARK: - TableView Datasource Methods
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let commentCell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         let entry = categoryArray[indexPath.row]
         
-        commentCell.textLabel?.text = entry.name
+        cell.textLabel?.text = entry.name
         
-        return commentCell
+        cell.backgroundColor = UIColor.flatPowderBlue
+        
+        return cell
     }
-    
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
@@ -82,13 +87,29 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    //MARK: - Delete data from swipe
+    
+    override func updateModel(at indexPath: IndexPath) {
+        //update the data model
+        
+        categoryContext.delete(categoryArray[indexPath.row])
+        self.categoryArray.remove(at: indexPath.row)
+        
+        tableView.deleteRows(at: [indexPath as IndexPath], with: .fade)
+        
+        saveCategories()
+        
+        self.tableView.reloadData()
+        
+    }
+    
     //MARK: - Add new Categories
     
      @IBAction func addButtonPressed(_ sender: Any) {
         
         var textField = UITextField()
         
-        let alert = UIAlertController(title: "Enter Category", message: "", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Enter a new Category", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             
@@ -105,6 +126,8 @@ class CategoryViewController: UITableViewController {
             alertTextField.placeholder = "Add a new category"
             textField = alertTextField
         }
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.cancel, handler: nil))
         
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
